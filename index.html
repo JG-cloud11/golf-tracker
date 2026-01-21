@@ -1188,27 +1188,121 @@ useEffect(() => {
             type="file"
             accept=".json"
             className="hidden"
-            onChange={(e) => {
-              const file = e.target.files[0];
-              if (file) {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                  try {
-                    const data = JSON.parse(event.target.result);
-                    if (confirm(`Import data from ${data.exportDate ? new Date(data.exportDate).toLocaleDateString() : 'backup'}?\n\nThis will replace all current data.\n\nRounds: ${data.rounds?.length || 0}\nClubs: ${data.clubs?.length || 0}\nCourses: ${data.courses?.length || 0}`)) {
-                      setRounds(data.rounds || []);
-                      setClubs(data.clubs || []);
-                      setCourses(data.courses || []);
-                      alert('Data imported successfully!');
-                    }
-                  } catch (error) {
-                    alert('Error importing file. Please make sure it is a valid backup file.');
-                  }
-                };
-                reader.readAsText(file);
+onChange={async (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const data = JSON.parse(event.target.result);
+        if (confirm(`Import data from ${data.exportDate ? new Date(data.exportDate).toLocaleDateString() : 'backup'}?\n\nThis will ADD to your current data.\n\nRounds: ${data.rounds?.length || 0}\nClubs: ${data.clubs?.length || 0}\nCourses: ${data.courses?.length || 0}`)) {
+          
+          // Import courses
+          if (data.courses && data.courses.length > 0) {
+            for (const course of data.courses) {
+              const { data: insertedCourse, error } = await supabase
+                .from('courses')
+                .insert([{
+                  user_id: user.id,
+                  name: course.name,
+                  tees: course.tees
+                }])
+                .select();
+              
+              if (!error && insertedCourse && insertedCourse[0]) {
+                setCourses(prev => [...prev, insertedCourse[0]]);
               }
-              e.target.value = ''; // Reset input
-            }}
+            }
+          }
+
+          // Import clubs
+          if (data.clubs && data.clubs.length > 0) {
+            for (const club of data.clubs) {
+              const { data: insertedClub, error } = await supabase
+                .from('clubs')
+                .insert([{
+                  user_id: user.id,
+                  name: club.name,
+                  loft: club.loft,
+                  lie: club.lie,
+                  shaft: club.shaft,
+                  distance: club.distance
+                }])
+                .select();
+              
+              if (!error && insertedClub && insertedClub[0]) {
+                setClubs(prev => [...prev, insertedClub[0]]);
+              }
+            }
+          }
+
+          // Import rounds
+          if (data.rounds && data.rounds.length > 0) {
+            for (const round of data.rounds) {
+              // Find matching course by name to get the new course_id
+              const matchingCourse = courses.find(c => 
+                c.name === data.courses?.find(dc => dc.id === round.courseId)?.name
+              );
+              
+              const { data: insertedRound, error } = await supabase
+                .from('rounds')
+                .insert([{
+                  user_id: user.id,
+                  date: round.date,
+                  course_id: matchingCourse?.id || courses[0]?.id,
+                  tee_color: round.teeColor,
+                  adjusted_gross_score: round.adjustedGrossScore,
+                  course_rating: round.courseRating,
+                  slope: round.slope,
+                  par: round.par,
+                  fairways_hit: round.fairwaysHit || 0,
+                  fairways_possible: round.fairwaysPossible || 14,
+                  greens_in_regulation: round.greensInRegulation || 0,
+                  greens_possible: round.greensPossible || 18,
+                  putts: round.putts || 0,
+                  penalty_strokes: round.penaltyStrokes || 0,
+                  double_bogey_or_worse: round.doubleBogeyOrWorse || 0,
+                  birdies: round.birdies || [],
+                  notes: round.notes || ''
+                }])
+                .select();
+              
+              if (!error && insertedRound && insertedRound[0]) {
+                const newRound = {
+                  id: insertedRound[0].id,
+                  date: insertedRound[0].date,
+                  courseId: insertedRound[0].course_id,
+                  teeColor: insertedRound[0].tee_color,
+                  adjustedGrossScore: insertedRound[0].adjusted_gross_score,
+                  courseRating: parseFloat(insertedRound[0].course_rating),
+                  slope: insertedRound[0].slope,
+                  par: insertedRound[0].par,
+                  fairwaysHit: insertedRound[0].fairways_hit,
+                  fairwaysPossible: insertedRound[0].fairways_possible,
+                  greensInRegulation: insertedRound[0].greens_in_regulation,
+                  greensPossible: insertedRound[0].greens_possible,
+                  putts: insertedRound[0].putts,
+                  penaltyStrokes: insertedRound[0].penalty_strokes,
+                  doubleBogeyOrWorse: insertedRound[0].double_bogey_or_worse,
+                  birdies: insertedRound[0].birdies || [],
+                  notes: insertedRound[0].notes
+                };
+                setRounds(prev => [...prev, newRound]);
+              }
+            }
+          }
+
+          alert('Data imported successfully!');
+        }
+      } catch (error) {
+        console.error('Import error:', error);
+        alert('Error importing file: ' + error.message);
+      }
+    };
+    reader.readAsText(file);
+  }
+  e.target.value = ''; // Reset input
+}}
           />
         </label>
 		<button
@@ -1254,76 +1348,77 @@ useEffect(() => {
                 {activeTab === 'clubs' && <ClubsView />}
                 {activeTab === 'courses' && <CoursesView />}
               </div>
+{/* Modals */}
+              {showRoundForm && (
+                <RoundForm
+                  round={editingRound}
+                  onSave={async (round) => {
+                    try {
+                      const roundData = {
+                        user_id: user.id,
+                        date: round.date,
+                        course_id: round.courseId,
+                        tee_color: round.teeColor,
+                        adjusted_gross_score: round.adjustedGrossScore,
+                        course_rating: round.courseRating,
+                        slope: round.slope,
+                        par: round.par,
+                        fairways_hit: round.fairwaysHit,
+                        fairways_possible: round.fairwaysPossible,
+                        greens_in_regulation: round.greensInRegulation,
+                        greens_possible: round.greensPossible,
+                        putts: round.putts,
+                        penalty_strokes: round.penaltyStrokes,
+                        double_bogey_or_worse: round.doubleBogeyOrWorse,
+                        birdies: round.birdies || [],
+                        notes: round.notes
+                      };
 
-onSave={async (round) => {
-  try {
-    const roundData = {
-      user_id: user.id,
-      date: round.date,
-      course_id: round.courseId,
-      tee_color: round.teeColor,
-      adjusted_gross_score: round.adjustedGrossScore,
-      course_rating: round.courseRating,
-      slope: round.slope,
-      par: round.par,
-      fairways_hit: round.fairwaysHit,
-      fairways_possible: round.fairwaysPossible,
-      greens_in_regulation: round.greensInRegulation,
-      greens_possible: round.greensPossible,
-      putts: round.putts,
-      penalty_strokes: round.penaltyStrokes,
-      double_bogey_or_worse: round.doubleBogeyOrWorse,
-      birdies: round.birdies || [],
-      notes: round.notes
-    };
-
-    if (editingRound) {
-      // Update existing round
-      const { error } = await supabase
-        .from('rounds')
-        .update(roundData)
-        .eq('id', round.id);
-      
-      if (error) throw error;
-      setRounds(rounds.map(r => r.id === round.id ? round : r));
-    } else {
-      // Insert new round
-      const { data, error } = await supabase
-        .from('rounds')
-        .insert([roundData])
-        .select();
-      
-      if (error) throw error;
-      if (data && data[0]) {
-        const newRound = {
-          id: data[0].id,
-          date: data[0].date,
-          courseId: data[0].course_id,
-          teeColor: data[0].tee_color,
-          adjustedGrossScore: data[0].adjusted_gross_score,
-          courseRating: data[0].course_rating,
-          slope: data[0].slope,
-          par: data[0].par,
-          fairwaysHit: data[0].fairways_hit,
-          fairwaysPossible: data[0].fairways_possible,
-          greensInRegulation: data[0].greens_in_regulation,
-          greensPossible: data[0].greens_possible,
-          putts: data[0].putts,
-          penaltyStrokes: data[0].penalty_strokes,
-          doubleBogeyOrWorse: data[0].double_bogey_or_worse,
-          birdies: data[0].birdies || [],
-          notes: data[0].notes
-        };
-        setRounds([newRound, ...rounds]);
-      }
-    }
-    setShowRoundForm(false);
-    setEditingRound(null);
-  } catch (error) {
-    console.error('Error saving round:', error);
-    alert('Error saving round: ' + error.message);
-  }
-}}
+                      if (editingRound) {
+                        const { error } = await supabase
+                          .from('rounds')
+                          .update(roundData)
+                          .eq('id', round.id);
+                        
+                        if (error) throw error;
+                        setRounds(rounds.map(r => r.id === round.id ? round : r));
+                      } else {
+                        const { data, error } = await supabase
+                          .from('rounds')
+                          .insert([roundData])
+                          .select();
+                        
+                        if (error) throw error;
+                        if (data && data[0]) {
+                          const newRound = {
+                            id: data[0].id,
+                            date: data[0].date,
+                            courseId: data[0].course_id,
+                            teeColor: data[0].tee_color,
+                            adjustedGrossScore: data[0].adjusted_gross_score,
+                            courseRating: data[0].course_rating,
+                            slope: data[0].slope,
+                            par: data[0].par,
+                            fairwaysHit: data[0].fairways_hit,
+                            fairwaysPossible: data[0].fairways_possible,
+                            greensInRegulation: data[0].greens_in_regulation,
+                            greensPossible: data[0].greens_possible,
+                            putts: data[0].putts,
+                            penaltyStrokes: data[0].penalty_strokes,
+                            doubleBogeyOrWorse: data[0].double_bogey_or_worse,
+                            birdies: data[0].birdies || [],
+                            notes: data[0].notes
+                          };
+                          setRounds([newRound, ...rounds]);
+                        }
+                      }
+                      setShowRoundForm(false);
+                      setEditingRound(null);
+                    } catch (error) {
+                      console.error('Error saving round:', error);
+                      alert('Error saving round: ' + error.message);
+                    }
+                  }}
                   onCancel={() => {
                     setShowRoundForm(false);
                     setEditingRound(null);
@@ -1331,34 +1426,36 @@ onSave={async (round) => {
                 />
               )}
 
-onSave={async (course) => {
-  try {
-    const { data, error } = await supabase
-      .from('courses')
-      .insert([{
-        user_id: user.id,
-        name: course.name,
-        tees: course.tees
-      }])
-      .select();
-    
-    if (error) throw error;
-    if (data && data[0]) {
-      setCourses([...courses, data[0]]);
-    }
-    setShowCourseForm(false);
-  } catch (error) {
-    console.error('Error saving course:', error);
-    alert('Error saving course: ' + error.message);
-  }
-}}
+              {showCourseForm && (
+                <CourseForm
+                  onSave={async (course) => {
+                    try {
+                      const { data, error } = await supabase
+                        .from('courses')
+                        .insert([{
+                          user_id: user.id,
+                          name: course.name,
+                          tees: course.tees
+                        }])
+                        .select();
+                      
+                      if (error) throw error;
+                      if (data && data[0]) {
+                        setCourses([...courses, data[0]]);
+                      }
+                      setShowCourseForm(false);
+                    } catch (error) {
+                      console.error('Error saving course:', error);
+                      alert('Error saving course: ' + error.message);
+                    }
+                  }}
                   onCancel={() => setShowCourseForm(false)}
                 />
               )}
             </div>
           );
         };
-
+		
         ReactDOM.render(<GolfDashboard />, document.getElementById('root'));
     </script>
 </body>
