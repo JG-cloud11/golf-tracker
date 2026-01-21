@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Golf Performance Tracker</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div id="root"></div>
+    
+    <script type="text/babel">
+	// Initialize Supabase
+const SUPABASE_URL = 'https://whpojfugxtaxguhcgrpm.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_w61fe-rP48vPDVI_tm83hA_Fsyh74DN';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const { useState, useEffect, useRef } = React;
+
+        // Icon Components
+        const Calendar = (props) => (
+            <svg {...props} xmlns="http://www.w3.org/2000/svg" width={props.size || 24} height={props.size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+        );
+
+        const TrendingUp = (props) => (
+            <svg {...props} xmlns="http://www.w3.org/2000/svg" width={props.size || 24} height={props.size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                <polyline points="17 6 23 6 23 12"></polyline>
+            </svg>
+        );
+
+        const Target = (props) => (
+            <svg {...props} xmlns="http://www.w3.org/2000/svg" width={props.size || 24} height={props.size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <circle cx="12" cy="12" r="6"></circle>
+                <circle cx="12" cy="12" r="2"></circle>
+            </svg>
+        );
+
+        const Trophy = (props) => (
+            <svg {...props} xmlns="http://www.w3.org/2000/svg" width={props.size || 24} height={props.size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                <path d="M4 22h16"></path>
+                <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+                <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+                <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+            </svg>
+        );
+
+        const Plus = (props) => (
+            <svg {...props} xmlns="http://www.w3.org/2000/svg" width={props.size || 24} height={props.size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+        );
+
+        const Edit2 = (props) => (
+            <svg {...props} xmlns="http://www.w3.org/2000/svg" width={props.size || 24} height={props.size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+            </svg>
+        );
+
+        const Trash2 = (props) => (
+            <svg {...props} xmlns="http://www.w3.org/2000/svg" width={props.size || 24} height={props.size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                <line x1="10" y1="11" x2="10" y2="17"></line>
+                <line x1="14" y1="11" x2="14" y2="17"></line>
+            </svg>
+        );
+
+        const List = (props) => (
+            <svg {...props} xmlns="http://www.w3.org/2000/svg" width={props.size || 24} height={props.size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="8" y1="6" x2="21" y2="6"></line>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+                <line x1="8" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+            </svg>
+        );
+
+        const BarChart3 = (props) => (
+            <svg {...props} xmlns="http://www.w3.org/2000/svg" width={props.size || 24} height={props.size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 3v18h18"></path>
+                <path d="M18 17V9"></path>
+                <path d="M13 17V5"></path>
+                <path d="M8 17v-3"></path>
+            </svg>
+        );
+
+        // Chart Component using Chart.js
+        const LineChartComponent = ({ data }) => {
+            const canvasRef = useRef(null);
+            const chartRef = useRef(null);
+
+            useEffect(() => {
+                if (canvasRef.current) {
+                    const ctx = canvasRef.current.getContext('2d');
+                    
+                    // Destroy existing chart
+                    if (chartRef.current) {
+                        chartRef.current.destroy();
+                    }
+
+                    // Create new chart
+                    chartRef.current = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: data.map(d => d.date),
+                            datasets: [{
+                                label: 'Handicap Index',
+                                data: data.map(d => d.handicap),
+                                borderColor: '#2563eb',
+                                backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                                tension: 0.4,
+                                fill: true
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    display: true,
+                                    position: 'top'
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: false
+                                }
+                            }
+                        }
+                    });
+                }
+
+                return () => {
+                    if (chartRef.current) {
+                        chartRef.current.destroy();
+                    }
+                };
+            }, [data]);
+
+            return <canvas ref={canvasRef} style={{ maxHeight: '300px' }}></canvas>;
+        };
+// Auth Component
+const AuthForm = ({ onAuthSuccess }) => {
+  const [isLogin, setIsLogin] = useState(true);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleAuth = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    try {
+      if (isLogin) {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        if (error) throw error;
+        onAuthSuccess(data.user);
+      } else {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+        });
+        if (error) throw error;
+        alert('Check your email for the confirmation link!');
+      }
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+      <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full">
+        <div className="text-center mb-8">
+          <Trophy className="mx-auto text-blue-600 mb-4" size={48} />
+          <h1 className="text-3xl font-bold text-gray-900">Golf Performance Tracker</h1>
+        </div>
+
+        <form onSubmit={handleAuth} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full border rounded px-3 py-2"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full border rounded px-3 py-2"
+              minLength="6"
+              required
+            />
+          </div>
+
+          {error && (
+            <div className="bg-red-50 text-red-600 p-3 rounded text-sm">
+              {error}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-blue-600 text-white rounded py-2 hover:bg-blue-700 disabled:bg-gray-400"
+          >
+            {loading ? 'Loading...' : (isLogin ? 'Sign In' : 'Sign Up')}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsLogin(!isLogin)}
+            className="w-full text-blue-600 text-sm hover:underline"
+          >
+            {isLogin ? "Don't have an account? Sign Up" : 'Already have an account? Sign In'}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+       const GolfDashboard = () => {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [rounds, setRounds] = useState([]);
+  const [clubs, setClubs] = useState([]);
+  const [courses, setCourses] = useState([]);
+  const [showRoundForm, setShowRoundForm] = useState(false);
+  const [showCourseForm, setShowCourseForm] = useState(false);
+  const [editingRound, setEditingRound] = useState(null);
+
+  // Check if user is logged in
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Show auth form if not logged in
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-xl">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <AuthForm onAuthSuccess={setUser} />;
+  }
+
+// Load data from Supabase
+useEffect(() => {
+  if (!user) return;
+
+  const loadData = async () => {
+    try {
+      // Load courses
+      const { data: coursesData, error: coursesError } = await supabase
+        .from('courses')
+        .select('*')
+        .eq('user_id', user.id);
+      
+      if (coursesError) throw coursesError;
+      
+      if (coursesData && coursesData.length > 0) {
+        setCourses(coursesData);
+      } else {
+        // Add default courses for new users
+        const defaultCourses = [
+          { user_id: user.id, name: 'Bluegrass Yacht & Country Club', tees: [
+            { color: 'White', rating: 70.8, slope: 130, par: 72 }
+          ]},
+          { user_id: user.id, name: 'Pebble Beach', tees: [
+            { color: 'Blue', rating: 74.9, slope: 145, par: 72 },
+            { color: 'White', rating: 72.3, slope: 137, par: 72 }
+          ]},
+          { user_id: user.id, name: 'Augusta National', tees: [
+            { color: 'Championship', rating: 76.2, slope: 148, par: 72 },
+            { color: 'Member', rating: 72.8, slope: 135, par: 72 }
+          ]}
+        ];
+        
+        const { data: insertedCourses } = await supabase
+          .from('courses')
+          .insert(defaultCourses)
+          .select();
+        
+        if (insertedCourses) setCourses(insertedCourses);
+      }
+
+      // Load clubs
+      const { data: clubsData, error: clubsError } = await supabase
+        .from('clubs')
+        .select('*')
+        .eq('user_id', user.id);
+      
+      if (clubsError) throw clubsError;
+      if (clubsData) setClubs(clubsData);
+
+      // Load rounds
+      const { data: roundsData, error: roundsError } = await supabase
+        .from('rounds')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('date', { ascending: false });
+      
+      if (roundsError) throw roundsError;
+      if (roundsData) {
+        // Convert snake_case from DB to camelCase for our app
+        const formattedRounds = roundsData.map(round => ({
+          id: round.id,
+          date: round.date,
+          courseId: round.course_id,
+          teeColor: round.tee_color,
+          adjustedGrossScore: round.adjusted_gross_score,
+          courseRating: round.course_rating,
+          slope: round.slope,
+          par: round.par,
+          fairwaysHit: round.fairways_hit,
+          fairwaysPossible: round.fairways_possible,
+          greensInRegulation: round.greens_in_regulation,
+          greensPossible: round.greens_possible,
+          putts: round.putts,
+          penaltyStrokes: round.penalty_strokes,
+          doubleBogeyOrWorse: round.double_bogey_or_worse,
+          birdies: round.birdies || [],
+          notes: round.notes
+        }));
+        setRounds(formattedRounds);
+      }
+    } catch (error) {
+      console.error('Error loading data:', error);
+      alert('Error loading data: ' + error.message);
+    }
+  };
+
+  loadData();
+}, [user]);
+
+          const calculateHandicapIndex = () => {
+            if (rounds.length === 0) return 0;
+            
+            const scoreDifferentials = rounds.map(round => {
+              const diff = ((round.adjustedGrossScore - round.courseRating) * 113) / round.slope;
+              return { ...round, differential: diff };
+            }).sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            const last20 = scoreDifferentials.slice(0, 20);
+            
+            if (last20.length < 3) return 0;
+            
+            let numToUse;
+            if (last20.length >= 20) numToUse = 8;
+            else if (last20.length >= 19) numToUse = 7;
+            else if (last20.length >= 16) numToUse = 6;
+            else if (last20.length >= 13) numToUse = 5;
+            else if (last20.length >= 10) numToUse = 4;
+            else if (last20.length >= 7) numToUse = 3;
+            else if (last20.length >= 5) numToUse = 2;
+            else numToUse = 1;
+            
+            const sorted = [...last20].sort((a, b) => a.differential - b.differential);
+            const best = sorted.slice(0, numToUse);
+            const average = best.reduce((sum, r) => sum + r.differential, 0) / numToUse;
+            
+            return Math.round(average * 10) / 10;
+          };
+
+          const getHandicapTrend = () => {
+            const sortedRounds = [...rounds].sort((a, b) => new Date(a.date) - new Date(b.date));
+            const trend = [];
+            
+            sortedRounds.forEach((round, index) => {
+              const roundsUpToNow = sortedRounds.slice(0, index + 1);
+              let hcp = 0;
+              
+              if (roundsUpToNow.length >= 3) {
+                const diffs = roundsUpToNow.map(r => ((r.adjustedGrossScore - r.courseRating) * 113) / r.slope);
+                const last20diffs = diffs.slice(-20);
+                let numToUse = 1;
+                if (last20diffs.length >= 20) numToUse = 8;
+                else if (last20diffs.length >= 19) numToUse = 7;
+                else if (last20diffs.length >= 16) numToUse = 6;
+                else if (last20diffs.length >= 13) numToUse = 5;
+                else if (last20diffs.length >= 10) numToUse = 4;
+                else if (last20diffs.length >= 7) numToUse = 3;
+                else if (last20diffs.length >= 5) numToUse = 2;
+                
+                const sorted = [...last20diffs].sort((a, b) => a - b);
+                const best = sorted.slice(0, numToUse);
+                const avg = best.reduce((sum, d) => sum + d, 0) / numToUse;
+                hcp = Math.round(avg * 10) / 10;
+              }
+              
+              trend.push({
+                date: new Date(round.date).toLocaleDateString(),
+                handicap: hcp,
+                score: round.adjustedGrossScore
+              });
+            });
+            
+            return trend;
+          };
+
+         const RoundForm = ({ round, onSave, onCancel }) => {
+  const [formData, setFormData] = useState(round || {
+    date: new Date().toISOString().split('T')[0],
+    courseId: '',
+    teeColor: '',
+    adjustedGrossScore: '',
+    courseRating: '',
+    slope: '',
+    par: 72,
+    fairwaysHit: '',
+    fairwaysPossible: 14,
+    greensInRegulation: '',
+    greensPossible: 18,
+    putts: '',
+    penaltyStrokes: 0,
+    doubleBogeyOrWorse: 0,
+    notes: '',
+    birdies: []
+  });
+
+  const handleCourseChange = (courseId) => {
+    setFormData({ ...formData, courseId, teeColor: '', courseRating: '', slope: '', par: '' });
+  };
+
+  const handleTeeChange = (teeColor) => {
+    const course = courses.find(c => c.id === parseInt(formData.courseId));
+    const tee = course.tees.find(t => t.color === teeColor);
+    setFormData({ 
+      ...formData, 
+      teeColor,
+      courseRating: tee.rating,
+      slope: tee.slope,
+      par: tee.par
+    });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSave({
+      ...formData,
+      id: round?.id || Date.now(),
+      adjustedGrossScore: parseFloat(formData.adjustedGrossScore),
+      courseRating: parseFloat(formData.courseRating),
+      slope: parseInt(formData.slope),
+      par: parseInt(formData.par),
+      fairwaysHit: parseInt(formData.fairwaysHit) || 0,
+      greensInRegulation: parseInt(formData.greensInRegulation) || 0,
+      putts: parseInt(formData.putts) || 0,
+      penaltyStrokes: parseInt(formData.penaltyStrokes) || 0,
+      doubleBogeyOrWorse: parseInt(formData.doubleBogeyOrWorse) || 0,
+      birdies: formData.birdies || []
+    });
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
+      <div className="bg-white rounded-lg p-6 max-w-2xl w-full my-8">
+        <h2 className="text-2xl font-bold mb-4">{round ? 'Edit Round' : 'New Round'}</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Date</label>
+              <input type="date" value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} className="w-full border rounded px-3 py-2" required />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Course</label>
+              <select value={formData.courseId} onChange={(e) => handleCourseChange(e.target.value)} className="w-full border rounded px-3 py-2" required>
+                <option value="">Select Course</option>
+                {courses.map(course => (
+                  <option key={course.id} value={course.id}>{course.name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Tees</label>
+              <select value={formData.teeColor} onChange={(e) => handleTeeChange(e.target.value)} className="w-full border rounded px-3 py-2" required disabled={!formData.courseId}>
+                <option value="">Select Tees</option>
+                {formData.courseId && courses.find(c => c.id === parseInt(formData.courseId))?.tees.map(tee => (
+                  <option key={tee.color} value={tee.color}>{tee.color}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Adjusted Gross Score</label>
+              <input type="number" value={formData.adjustedGrossScore} onChange={(e) => setFormData({ ...formData, adjustedGrossScore: e.target.value })} className="w-full border rounded px-3 py-2" required />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Course Rating</label>
+              <input type="number" step="0.1" value={formData.courseRating} className="w-full border rounded px-3 py-2 bg-gray-100" readOnly required />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Slope</label>
+              <input type="number" value={formData.slope} className="w-full border rounded px-3 py-2 bg-gray-100" readOnly required />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Par</label>
+              <input type="number" value={formData.par} className="w-full border rounded px-3 py-2 bg-gray-100" readOnly />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Putts</label>
+              <input type="number" value={formData.putts} onChange={(e) => setFormData({ ...formData, putts: e.target.value })} className="w-full border rounded px-3 py-2" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Fairways Hit</label>
+              <input type="number" value={formData.fairwaysHit} onChange={(e) => setFormData({ ...formData, fairwaysHit: e.target.value })} className="w-full border rounded px-3 py-2" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">GIR</label>
+              <input type="number" value={formData.greensInRegulation} onChange={(e) => setFormData({ ...formData, greensInRegulation: e.target.value })} className="w-full border rounded px-3 py-2" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Penalty Strokes</label>
+              <input type="number" value={formData.penaltyStrokes} onChange={(e) => setFormData({ ...formData, penaltyStrokes: e.target.value })} className="w-full border rounded px-3 py-2" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Double Bogey or Worse</label>
+              <input type="number" value={formData.doubleBogeyOrWorse} onChange={(e) => setFormData({ ...formData, doubleBogeyOrWorse: e.target.value })} className="w-full border rounded px-3 py-2" />
+            </div>
+          </div>
+          
+          <div className="border-t pt-4">
+            <label className="block text-sm font-medium mb-2">Birdies (check holes where you made birdie)</label>
+            <div className="grid grid-cols-9 gap-2">
+              {[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18].map(hole => (
+                <label key={hole} className="flex items-center gap-1 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={formData.birdies?.includes(hole) || false}
+                    onChange={(e) => {
+                      const currentBirdies = formData.birdies || [];
+                      const newBirdies = e.target.checked 
+                        ? [...currentBirdies, hole]
+                        : currentBirdies.filter(h => h !== hole);
+                      setFormData({ ...formData, birdies: newBirdies });
+                    }}
+                    className="rounded"
+                  />
+                  {hole}
+                </label>
+              ))}
+            </div>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium mb-1">Notes</label>
+            <textarea value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} className="w-full border rounded px-3 py-2" rows="3" />
+          </div>
+          <div className="flex gap-2 justify-end">
+            <button type="button" onClick={onCancel} className="px-4 py-2 border rounded hover:bg-gray-100">Cancel</button>
+            <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Save Round</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+          const CourseForm = ({ onSave, onCancel }) => {
+            const [formData, setFormData] = useState({
+              name: '',
+              tees: [{ color: '', rating: '', slope: '', par: 72 }]
+            });
+
+            const addTee = () => {
+              setFormData({ ...formData, tees: [...formData.tees, { color: '', rating: '', slope: '', par: 72 }] });
+            };
+
+            const updateTee = (index, field, value) => {
+              const newTees = [...formData.tees];
+              newTees[index][field] = value;
+              setFormData({ ...formData, tees: newTees });
+            };
+
+            const removeTee = (index) => {
+              const newTees = formData.tees.filter((_, i) => i !== index);
+              setFormData({ ...formData, tees: newTees });
+            };
+
+            const handleSubmit = (e) => {
+              e.preventDefault();
+              onSave({
+                id: Date.now(),
+                name: formData.name,
+                tees: formData.tees.map(tee => ({
+                  ...tee,
+                  rating: parseFloat(tee.rating),
+                  slope: parseInt(tee.slope),
+                  par: parseInt(tee.par)
+                }))
+              });
+            };
+
+            return (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
+                <div className="bg-white rounded-lg p-6 max-w-2xl w-full my-8">
+                  <h2 className="text-2xl font-bold mb-4">Add Course</h2>
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Course Name</label>
+                      <input type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="w-full border rounded px-3 py-2" required />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Tee Information</label>
+                      {formData.tees.map((tee, index) => (
+                        <div key={index} className="border p-3 rounded mb-2">
+                          <div className="grid grid-cols-4 gap-2 mb-2">
+                            <input type="text" placeholder="Tee Color" value={tee.color} onChange={(e) => updateTee(index, 'color', e.target.value)} className="border rounded px-2 py-1" required />
+                            <input type="number" step="0.1" placeholder="Rating" value={tee.rating} onChange={(e) => updateTee(index, 'rating', e.target.value)} className="border rounded px-2 py-1" required />
+                            <input type="number" placeholder="Slope" value={tee.slope} onChange={(e) => updateTee(index, 'slope', e.target.value)} className="border rounded px-2 py-1" required />
+                            <input type="number" placeholder="Par" value={tee.par} onChange={(e) => updateTee(index, 'par', e.target.value)} className="border rounded px-2 py-1" required />
+                          </div>
+                          {formData.tees.length > 1 && (
+                            <button type="button" onClick={() => removeTee(index)} className="text-red-600 text-sm hover:underline">Remove Tee</button>
+                          )}
+                        </div>
+                      ))}
+                      <button type="button" onClick={addTee} className="text-blue-600 text-sm hover:underline">+ Add Another Tee</button>
+                    </div>
+                    <div className="flex gap-2 justify-end">
+                      <button type="button" onClick={onCancel} className="px-4 py-2 border rounded hover:bg-gray-100">Cancel</button>
+                      <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Save Course</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            );
+          };
+
+          const getAnnualStats = () => {
+  const currentYear = new Date().getFullYear();
+  const yearRounds = rounds.filter(r => new Date(r.date).getFullYear() === currentYear);
+  
+  if (yearRounds.length === 0) return null;
+  
+  // Filter rounds that have actual performance data (not just handicap data)
+  const roundsWithStats = yearRounds.filter(r => 
+    r.putts > 0 || r.fairwaysHit > 0 || r.greensInRegulation > 0 || 
+    r.penaltyStrokes > 0 || r.doubleBogeyOrWorse > 0
+  );
+  
+  // If no rounds have stats, return basic info only
+  if (roundsWithStats.length === 0) {
+    const avgScore = yearRounds.reduce((sum, r) => sum + r.adjustedGrossScore, 0) / yearRounds.length;
+    return {
+      rounds: yearRounds.length,
+      avgScore: avgScore.toFixed(1),
+      avgPutts: '-',
+      avgPenalties: '-',
+      avgDoubleBogeys: '-',
+      fairwayPct: '-',
+      girPct: '-',
+      bestScore: Math.min(...yearRounds.map(r => r.adjustedGrossScore)),
+      worstScore: Math.max(...yearRounds.map(r => r.adjustedGrossScore)),
+      hasStats: false
+    };
+  }
+  
+  // Calculate stats only from rounds with data
+  const avgScore = yearRounds.reduce((sum, r) => sum + r.adjustedGrossScore, 0) / yearRounds.length;
+  const avgPutts = roundsWithStats.reduce((sum, r) => sum + (r.putts || 0), 0) / roundsWithStats.length;
+  const avgPenalties = roundsWithStats.reduce((sum, r) => sum + (r.penaltyStrokes || 0), 0) / roundsWithStats.length;
+  const avgDoubleBogeys = roundsWithStats.reduce((sum, r) => sum + (r.doubleBogeyOrWorse || 0), 0) / roundsWithStats.length;
+  const fairwayPct = roundsWithStats.reduce((sum, r) => sum + ((r.fairwaysHit || 0) / r.fairwaysPossible * 100), 0) / roundsWithStats.length;
+  const girPct = roundsWithStats.reduce((sum, r) => sum + ((r.greensInRegulation || 0) / r.greensPossible * 100), 0) / roundsWithStats.length;
+  
+  return {
+    rounds: yearRounds.length,
+    roundsWithStats: roundsWithStats.length,
+    avgScore: avgScore.toFixed(1),
+    avgPutts: avgPutts.toFixed(1),
+    avgPenalties: avgPenalties.toFixed(1),
+    avgDoubleBogeys: avgDoubleBogeys.toFixed(1),
+    fairwayPct: fairwayPct.toFixed(1),
+    girPct: girPct.toFixed(1),
+    bestScore: Math.min(...yearRounds.map(r => r.adjustedGrossScore)),
+    worstScore: Math.max(...yearRounds.map(r => r.adjustedGrossScore)),
+    hasStats: true
+  };
+};
+
+          const DashboardView = () => {
+            const currentHandicap = calculateHandicapIndex();
+            const handicapTrend = getHandicapTrend();
+            const stats = getAnnualStats();
+
+            return (
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div className="bg-blue-50 rounded-lg p-6">
+                    <div className="flex items-center justify-between">
+                      <Trophy className="text-blue-600" size={32} />
+                      <div className="text-right">
+                        <div className="text-3xl font-bold text-blue-900">{currentHandicap}</div>
+                        <div className="text-sm text-blue-700">Handicap Index</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-green-50 rounded-lg p-6">
+                    <div className="flex items-center justify-between">
+                      <Calendar className="text-green-600" size={32} />
+                      <div className="text-right">
+                        <div className="text-3xl font-bold text-green-900">{stats?.rounds || 0}</div>
+                        <div className="text-sm text-green-700">Rounds This Year</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-purple-50 rounded-lg p-6">
+                    <div className="flex items-center justify-between">
+                      <Target className="text-purple-600" size={32} />
+                      <div className="text-right">
+                        <div className="text-3xl font-bold text-purple-900">{stats?.avgScore || '-'}</div>
+                        <div className="text-sm text-purple-700">Avg Score</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-orange-50 rounded-lg p-6">
+                    <div className="flex items-center justify-between">
+                      <TrendingUp className="text-orange-600" size={32} />
+                      <div className="text-right">
+                        <div className="text-3xl font-bold text-orange-900">{stats?.bestScore || '-'}</div>
+                        <div className="text-sm text-orange-700">Best Score</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Birdie Challenge Tracker */}
+<div className="bg-white rounded-lg p-6 shadow">
+  <div className="flex justify-between items-center mb-4">
+    <h3 className="text-lg font-semibold">Birdie Challenge {new Date().getFullYear()}</h3>
+    <div className="text-sm text-gray-600">
+      {(() => {
+        const currentYear = new Date().getFullYear();
+        const yearRounds = rounds.filter(r => new Date(r.date).getFullYear() === currentYear);
+        const birdieCount = {};
+        yearRounds.forEach(round => {
+          if (round.birdies && round.birdies.length > 0) {
+            round.birdies.forEach(hole => {
+              birdieCount[hole] = (birdieCount[hole] || 0) + 1;
+            });
+          }
+        });
+        const completedHoles = Object.keys(birdieCount).length;
+        return `${completedHoles} of 18 Complete`;
+      })()}
+    </div>
+  </div>
+  
+  <div className="mb-4">
+    <div className="text-xs font-semibold text-gray-500 mb-2">FRONT NINE</div>
+    <div className="grid grid-cols-9 gap-3">
+      {[1,2,3,4,5,6,7,8,9].map(hole => {
+        const currentYear = new Date().getFullYear();
+        const yearRounds = rounds.filter(r => new Date(r.date).getFullYear() === currentYear);
+        let birdieCount = 0;
+        yearRounds.forEach(round => {
+          if (round.birdies && round.birdies.includes(hole)) {
+            birdieCount++;
+          }
+        });
+        
+        return (
+          <div key={hole} className="flex flex-col items-center">
+            <div className="text-xs font-semibold text-gray-600 mb-1">#{hole}</div>
+            <div 
+              className={`w-12 h-12 flex items-center justify-center text-lg font-bold rounded-lg ${
+                birdieCount > 0 
+                  ? 'bg-yellow-100 text-yellow-700 border-2 border-yellow-500' 
+                  : 'bg-gray-100 text-gray-400 border-2 border-gray-300'
+              }`} 
+              style={{
+                clipPath: birdieCount > 0 ? 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)' : 'none'
+              }}
+            >
+              {birdieCount > 0 ? birdieCount : '-'}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  </div>
+  
+  <div>
+    <div className="text-xs font-semibold text-gray-500 mb-2">BACK NINE</div>
+    <div className="grid grid-cols-9 gap-3">
+      {[10,11,12,13,14,15,16,17,18].map(hole => {
+        const currentYear = new Date().getFullYear();
+        const yearRounds = rounds.filter(r => new Date(r.date).getFullYear() === currentYear);
+        let birdieCount = 0;
+        yearRounds.forEach(round => {
+          if (round.birdies && round.birdies.includes(hole)) {
+            birdieCount++;
+          }
+        });
+        
+        return (
+          <div key={hole} className="flex flex-col items-center">
+            <div className="text-xs font-semibold text-gray-600 mb-1">#{hole}</div>
+            <div 
+              className={`w-12 h-12 flex items-center justify-center text-lg font-bold rounded-lg ${
+                birdieCount > 0 
+                  ? 'bg-yellow-100 text-yellow-700 border-2 border-yellow-500' 
+                  : 'bg-gray-100 text-gray-400 border-2 border-gray-300'
+              }`} 
+              style={{
+                clipPath: birdieCount > 0 ? 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)' : 'none'
+              }}
+            >
+              {birdieCount > 0 ? birdieCount : '-'}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  </div>
+</div>
+
+                {stats && stats.hasStats !== false && (
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="bg-white rounded-lg p-6 shadow">
+      <h3 className="text-lg font-semibold mb-4">Performance Metrics</h3>
+      {stats.roundsWithStats && (
+        <div className="text-xs text-gray-500 mb-3">Based on {stats.roundsWithStats} round{stats.roundsWithStats !== 1 ? 's' : ''} with stats</div>
+      )}
+      <div className="space-y-3">
+        <div className="flex justify-between items-center">
+          <span className="text-gray-600">Fairways Hit</span>
+          <span className="font-semibold">{stats.fairwayPct}%</span>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-gray-600">Greens in Regulation</span>
+          <span className="font-semibold">{stats.girPct}%</span>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-gray-600">Avg Putts per Round</span>
+          <span className="font-semibold">{stats.avgPutts}</span>
+        </div>
+      </div>
+    </div>
+    <div className="bg-white rounded-lg p-6 shadow">
+      <h3 className="text-lg font-semibold mb-4">Trouble Shots</h3>
+      {stats.roundsWithStats && (
+        <div className="text-xs text-gray-500 mb-3">Based on {stats.roundsWithStats} round{stats.roundsWithStats !== 1 ? 's' : ''} with stats</div>
+      )}
+      <div className="space-y-3">
+        <div className="flex justify-between items-center">
+          <span className="text-gray-600">Avg Penalty Strokes</span>
+          <span className="font-semibold text-red-600">{stats.avgPenalties}</span>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-gray-600">Avg Double Bogey+</span>
+          <span className="font-semibold text-red-600">{stats.avgDoubleBogeys}</span>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-gray-600">Score Range</span>
+          <span className="font-semibold">{stats.bestScore} - {stats.worstScore}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
+                {rounds.length === 0 && (
+                  <div className="bg-white rounded-lg p-12 shadow text-center">
+                    <Calendar size={48} className="mx-auto text-gray-400 mb-4" />
+                    <h3 className="text-xl font-semibold text-gray-700 mb-2">No Rounds Yet</h3>
+                    <p className="text-gray-500 mb-4">Start tracking your golf performance by adding your first round</p>
+                    <button onClick={() => setShowRoundForm(true)} className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 inline-flex items-center gap-2">
+                      <Plus size={20} />
+                      Add First Round
+                    </button>
+                  </div>
+                )}
+              </div>
+            );
+          };
+
+          const RoundsView = () => {
+            const sortedRounds = [...rounds].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            return (
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-2xl font-bold">Round History</h2>
+                  <button onClick={() => setShowRoundForm(true)} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2">
+                    <Plus size={20} />
+                    Add Round
+                  </button>
+                </div>
+
+                <div className="bg-white rounded-lg shadow overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-4 py-3 text-left text-sm font-semibold">Date</th>
+                          <th className="px-4 py-3 text-left text-sm font-semibold">Course</th>
+                          <th className="px-4 py-3 text-left text-sm font-semibold">Tees</th>
+                          <th className="px-4 py-3 text-center text-sm font-semibold">Score</th>
+                          <th className="px-4 py-3 text-center text-sm font-semibold">Diff</th>
+                          <th className="px-4 py-3 text-center text-sm font-semibold">Penalties</th>
+                          <th className="px-4 py-3 text-center text-sm font-semibold">2x Bogey+</th>
+                          <th className="px-4 py-3 text-center text-sm font-semibold">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y">
+                        {sortedRounds.map(round => {
+                          const course = courses.find(c => c.id === parseInt(round.courseId));
+                          const differential = ((round.adjustedGrossScore - round.courseRating) * 113 / round.slope).toFixed(1);
+                          
+                          return (
+                            <tr key={round.id} className="hover:bg-gray-50">
+                              <td className="px-4 py-3 text-sm">{new Date(round.date).toLocaleDateString()}</td>
+                              <td className="px-4 py-3 text-sm">{course?.name || 'Unknown'}</td>
+                              <td className="px-4 py-3 text-sm">{round.teeColor}</td>
+                              <td className="px-4 py-3 text-sm text-center font-semibold">{round.adjustedGrossScore}</td>
+                              <td className="px-4 py-3 text-sm text-center">{differential}</td>
+                              <td className="px-4 py-3 text-sm text-center">{round.penaltyStrokes}</td>
+                              <td className="px-4 py-3 text-sm text-center">{round.doubleBogeyOrWorse}</td>
+                              <td className="px-4 py-3 text-sm text-center">
+                                <button onClick={() => { setEditingRound(round); setShowRoundForm(true); }} className="text-blue-600 hover:text-blue-800 mr-3">
+                                  <Edit2 size={16} />
+                                </button>
+                                onClick={async () => {
+  if (confirm('Delete this round?')) {
+    try {
+      const { error } = await supabase
+        .from('rounds')
+        .delete()
+        .eq('id', round.id);
+      
+      if (error) throw error;
+      setRounds(rounds.filter(r => r.id !== round.id));
+    } catch (error) {
+      console.error('Error deleting round:', error);
+      alert('Error deleting round: ' + error.message);
+    }
+  }
+}}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            );
+          };
+
+          const ClubsView = () => {
+  const [showClubForm, setShowClubForm] = useState(false);
+  const [clubForm, setClubForm] = useState({ name: '', loft: '', lie: '', shaft: '', distance: '' });
+
+  const handleAddClub = async (e) => {
+    e.preventDefault();
+    try {
+      const { data, error } = await supabase
+        .from('clubs')
+        .insert([{
+          user_id: user.id,
+          name: clubForm.name,
+          loft: parseFloat(clubForm.loft),
+          lie: parseFloat(clubForm.lie),
+          shaft: clubForm.shaft,
+          distance: parseInt(clubForm.distance)
+        }])
+        .select();
+      
+      if (error) throw error;
+      if (data && data[0]) {
+        setClubs([...clubs, data[0]]);
+      }
+      setClubForm({ name: '', loft: '', lie: '', shaft: '', distance: '' });
+      setShowClubForm(false);
+    } catch (error) {
+      console.error('Error saving club:', error);
+      alert('Error saving club: ' + error.message);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Club Specifications</h2>
+        <button onClick={() => setShowClubForm(true)} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2">
+          <Plus size={20} />
+          Add Club
+        </button>
+      </div>
+
+      {showClubForm && (
+        <div className="bg-white rounded-lg p-6 shadow">
+          <form onSubmit={handleAddClub} className="grid grid-cols-6 gap-4">
+            <input type="text" placeholder="Club Name" value={clubForm.name} onChange={(e) => setClubForm({ ...clubForm, name: e.target.value })} className="border rounded px-3 py-2" required />
+            <input type="number" step="0.5" placeholder="Loft (°)" value={clubForm.loft} onChange={(e) => setClubForm({ ...clubForm, loft: e.target.value })} className="border rounded px-3 py-2" required />
+            <input type="number" step="0.5" placeholder="Lie (°)" value={clubForm.lie} onChange={(e) => setClubForm({ ...clubForm, lie: e.target.value })} className="border rounded px-3 py-2" required />
+            <input type="text" placeholder="Shaft" value={clubForm.shaft} onChange={(e) => setClubForm({ ...clubForm, shaft: e.target.value })} className="border rounded px-3 py-2" required />
+            <input type="number" placeholder="Distance (yds)" value={clubForm.distance} onChange={(e) => setClubForm({ ...clubForm, distance: e.target.value })} className="border rounded px-3 py-2" required />
+            <button type="submit" className="bg-blue-600 text-white rounded px-4 py-2 hover:bg-blue-700">Add</button>
+            <button type="button" onClick={() => setShowClubForm(false)} className="border rounded px-4 py-2 hover:bg-gray-100">Cancel</button>
+          </form>
+        </div>
+      )}
+
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        <table className="w-full">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-4 py-3 text-left text-sm font-semibold">Club</th>
+              <th className="px-4 py-3 text-center text-sm font-semibold">Loft (°)</th>
+              <th className="px-4 py-3 text-center text-sm font-semibold">Lie (°)</th>
+              <th className="px-4 py-3 text-left text-sm font-semibold">Shaft</th>
+              <th className="px-4 py-3 text-center text-sm font-semibold">Distance (yds)</th>
+              <th className="px-4 py-3 text-center text-sm font-semibold">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y">
+            {clubs.map(club => (
+              <tr key={club.id} className="hover:bg-gray-50">
+                <td className="px-4 py-3 text-sm font-medium">{club.name}</td>
+                <td className="px-4 py-3 text-sm text-center">{club.loft}°</td>
+                <td className="px-4 py-3 text-sm text-center">{club.lie}°</td>
+                <td className="px-4 py-3 text-sm">{club.shaft}</td>
+                <td className="px-4 py-3 text-sm text-center">{club.distance}</td>
+                <td className="px-4 py-3 text-sm text-center">
+                  <button
+                    onClick={async () => {
+                      if (confirm('Delete this club?')) {
+                        try {
+                          const { error } = await supabase
+                            .from('clubs')
+                            .delete()
+                            .eq('id', club.id);
+                          
+                          if (error) throw error;
+                          setClubs(clubs.filter(c => c.id !== club.id));
+                        } catch (error) {
+                          console.error('Error deleting club:', error);
+                          alert('Error deleting club: ' + error.message);
+                        }
+                      }
+                    }}
+                    className="text-red-600 hover:text-red-800"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+       const CoursesView = () => {
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Course Database</h2>
+        <button onClick={() => setShowCourseForm(true)} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2">
+          <Plus size={20} />
+          Add Course
+        </button>
+      </div>
+
+      <div className="space-y-4">
+        {courses.map(course => (
+          <div key={course.id} className="bg-white rounded-lg shadow p-6">
+            <div className="flex justify-between items-start mb-4">
+              <h3 className="text-xl font-semibold">{course.name}</h3>
+              <button
+                onClick={async () => {
+                  if (confirm('Delete this course? This will not delete rounds played here.')) {
+                    try {
+                      const { error } = await supabase
+                        .from('courses')
+                        .delete()
+                        .eq('id', course.id);
+                      
+                      if (error) throw error;
+                      setCourses(courses.filter(c => c.id !== course.id));
+                    } catch (error) {
+                      console.error('Error deleting course:', error);
+                      alert('Error deleting course: ' + error.message);
+                    }
+                  }
+                }}
+                className="text-red-600 hover:text-red-800"
+              >
+                <Trash2 size={18} />
+              </button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {course.tees.map((tee, idx) => (
+                <div key={idx} className="border rounded p-3 bg-gray-50">
+                  <div className="font-semibold text-sm mb-2">{tee.color} Tees</div>
+                  <div className="text-sm space-y-1">
+                    <div>Rating: {tee.rating}</div>
+                    <div>Slope: {tee.slope}</div>
+                    <div>Par: {tee.par}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+          return (
+            <div className="min-h-screen bg-gray-100">
+              <div className="bg-white shadow">
+  <div className="max-w-7xl mx-auto px-4 py-6">
+    <div className="flex justify-between items-center">
+      <h1 className="text-3xl font-bold text-gray-900">Golf Performance Tracker</h1>
+      <div className="flex gap-2">
+        <button
+          onClick={() => {
+            // Export all data
+            const data = {
+              rounds: rounds,
+              clubs: clubs,
+              courses: courses,
+              exportDate: new Date().toISOString()
+            };
+            const dataStr = JSON.stringify(data, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `golf-tracker-backup-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+          }}
+          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm"
+        >
+          Export Data
+        </button>
+        <label className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm cursor-pointer">
+          Import Data
+          <input
+            type="file"
+            accept=".json"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files[0];
+              if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                  try {
+                    const data = JSON.parse(event.target.result);
+                    if (confirm(`Import data from ${data.exportDate ? new Date(data.exportDate).toLocaleDateString() : 'backup'}?\n\nThis will replace all current data.\n\nRounds: ${data.rounds?.length || 0}\nClubs: ${data.clubs?.length || 0}\nCourses: ${data.courses?.length || 0}`)) {
+                      setRounds(data.rounds || []);
+                      setClubs(data.clubs || []);
+                      setCourses(data.courses || []);
+                      alert('Data imported successfully!');
+                    }
+                  } catch (error) {
+                    alert('Error importing file. Please make sure it is a valid backup file.');
+                  }
+                };
+                reader.readAsText(file);
+              }
+              e.target.value = ''; // Reset input
+            }}
+          />
+        </label>
+		<button
+  onClick={async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+  }}
+  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm"
+>
+  Logout
+</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+              <div className="bg-white shadow-sm">
+                <div className="max-w-7xl mx-auto px-4">
+                  <div className="flex space-x-8">
+                    <button onClick={() => setActiveTab('dashboard')} className={`py-4 px-2 border-b-2 font-medium text-sm flex items-center gap-2 ${activeTab === 'dashboard' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+                      <BarChart3 size={18} />
+                      Dashboard
+                    </button>
+                    <button onClick={() => setActiveTab('rounds')} className={`py-4 px-2 border-b-2 font-medium text-sm flex items-center gap-2 ${activeTab === 'rounds' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+                      <List size={18} />
+                      Rounds
+                    </button>
+                    <button onClick={() => setActiveTab('clubs')} className={`py-4 px-2 border-b-2 font-medium text-sm flex items-center gap-2 ${activeTab === 'clubs' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+                      <Target size={18} />
+                      Clubs
+                    </button>
+                    <button onClick={() => setActiveTab('courses')} className={`py-4 px-2 border-b-2 font-medium text-sm flex items-center gap-2 ${activeTab === 'courses' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+                      <Calendar size={18} />
+                      Courses
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="max-w-7xl mx-auto px-4 py-8">
+                {activeTab === 'dashboard' && <DashboardView />}
+                {activeTab === 'rounds' && <RoundsView />}
+                {activeTab === 'clubs' && <ClubsView />}
+                {activeTab === 'courses' && <CoursesView />}
+              </div>
+
+onSave={async (round) => {
+  try {
+    const roundData = {
+      user_id: user.id,
+      date: round.date,
+      course_id: round.courseId,
+      tee_color: round.teeColor,
+      adjusted_gross_score: round.adjustedGrossScore,
+      course_rating: round.courseRating,
+      slope: round.slope,
+      par: round.par,
+      fairways_hit: round.fairwaysHit,
+      fairways_possible: round.fairwaysPossible,
+      greens_in_regulation: round.greensInRegulation,
+      greens_possible: round.greensPossible,
+      putts: round.putts,
+      penalty_strokes: round.penaltyStrokes,
+      double_bogey_or_worse: round.doubleBogeyOrWorse,
+      birdies: round.birdies || [],
+      notes: round.notes
+    };
+
+    if (editingRound) {
+      // Update existing round
+      const { error } = await supabase
+        .from('rounds')
+        .update(roundData)
+        .eq('id', round.id);
+      
+      if (error) throw error;
+      setRounds(rounds.map(r => r.id === round.id ? round : r));
+    } else {
+      // Insert new round
+      const { data, error } = await supabase
+        .from('rounds')
+        .insert([roundData])
+        .select();
+      
+      if (error) throw error;
+      if (data && data[0]) {
+        const newRound = {
+          id: data[0].id,
+          date: data[0].date,
+          courseId: data[0].course_id,
+          teeColor: data[0].tee_color,
+          adjustedGrossScore: data[0].adjusted_gross_score,
+          courseRating: data[0].course_rating,
+          slope: data[0].slope,
+          par: data[0].par,
+          fairwaysHit: data[0].fairways_hit,
+          fairwaysPossible: data[0].fairways_possible,
+          greensInRegulation: data[0].greens_in_regulation,
+          greensPossible: data[0].greens_possible,
+          putts: data[0].putts,
+          penaltyStrokes: data[0].penalty_strokes,
+          doubleBogeyOrWorse: data[0].double_bogey_or_worse,
+          birdies: data[0].birdies || [],
+          notes: data[0].notes
+        };
+        setRounds([newRound, ...rounds]);
+      }
+    }
+    setShowRoundForm(false);
+    setEditingRound(null);
+  } catch (error) {
+    console.error('Error saving round:', error);
+    alert('Error saving round: ' + error.message);
+  }
+}}
+                  onCancel={() => {
+                    setShowRoundForm(false);
+                    setEditingRound(null);
+                  }}
+                />
+              )}
+
+onSave={async (course) => {
+  try {
+    const { data, error } = await supabase
+      .from('courses')
+      .insert([{
+        user_id: user.id,
+        name: course.name,
+        tees: course.tees
+      }])
+      .select();
+    
+    if (error) throw error;
+    if (data && data[0]) {
+      setCourses([...courses, data[0]]);
+    }
+    setShowCourseForm(false);
+  } catch (error) {
+    console.error('Error saving course:', error);
+    alert('Error saving course: ' + error.message);
+  }
+}}
+                  onCancel={() => setShowCourseForm(false)}
+                />
+              )}
+            </div>
+          );
+        };
+
+        ReactDOM.render(<GolfDashboard />, document.getElementById('root'));
+    </script>
+</body>
+</html>
