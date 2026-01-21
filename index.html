@@ -272,20 +272,7 @@ const AuthForm = ({ onAuthSuccess }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Show auth form if not logged in
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="text-xl">Loading...</div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return <AuthForm onAuthSuccess={setUser} />;
-  }
-
-// Load data from Supabase
+  // Load data from Supabase
 useEffect(() => {
   if (!user) return;
 
@@ -371,6 +358,20 @@ useEffect(() => {
 
   loadData();
 }, [user]);
+  // Show auth form if not logged in
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-xl">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <AuthForm onAuthSuccess={setUser} />;
+  }
+
+
 
           const calculateHandicapIndex = () => {
             if (rounds.length === 0) return 0;
