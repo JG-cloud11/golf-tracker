@@ -1125,21 +1125,32 @@ useEffect(() => {
               <h3 className="text-xl font-semibold">{course.name}</h3>
               <button
                 onClick={async () => {
-                  if (confirm('Delete this course? This will not delete rounds played here.')) {
-                    try {
-                      const { error } = await supabase
-                        .from('courses')
-                        .delete()
-                        .eq('id', course.id);
-                      
-                      if (error) throw error;
-                      setCourses(courses.filter(c => c.id !== course.id));
-                    } catch (error) {
-                      console.error('Error deleting course:', error);
-                      alert('Error deleting course: ' + error.message);
-                    }
-                  }
-                }}
+  // Check if course has rounds
+  const { data: courseRounds } = await supabase
+    .from('rounds')
+    .select('id')
+    .eq('course_id', course.id);
+  
+  if (courseRounds && courseRounds.length > 0) {
+    alert(`Cannot delete this course because you have ${courseRounds.length} round(s) associated with it. Delete those rounds first, or keep the course for your records.`);
+    return;
+  }
+  
+  if (confirm('Delete this course?')) {
+    try {
+      const { error } = await supabase
+        .from('courses')
+        .delete()
+        .eq('id', course.id);
+      
+      if (error) throw error;
+      setCourses(courses.filter(c => c.id !== course.id));
+    } catch (error) {
+      console.error('Error deleting course:', error);
+      alert('Error deleting course: ' + error.message);
+    }
+  }
+}}
                 className="text-red-600 hover:text-red-800"
               >
                 <Trash2 size={18} />
