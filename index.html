@@ -10,6 +10,78 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+ <style>
+  /* Mobile Portrait Optimizations */
+  @media (max-width: 640px) {
+    /* Header: Stack title and buttons */
+    .header-container {
+      flex-direction: column !important;
+      align-items: flex-start !important;
+      gap: 1rem;
+    }
+    
+    /* Make title smaller on mobile */
+    .header-container h1 {
+      font-size: 1.5rem !important;
+      line-height: 2rem !important;
+    }
+    
+    /* Button container full width with smaller buttons */
+    .button-container {
+      width: 100% !important;
+      justify-content: space-between !important;
+    }
+    
+    .button-container button,
+    .button-container label {
+      padding: 0.5rem 0.75rem !important;
+      font-size: 0.75rem !important;
+    }
+    
+    /* Navigation tabs: smaller text and tighter spacing */
+    .nav-tabs {
+      gap: 0.5rem !important;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    
+    .nav-tabs button {
+      font-size: 0.875rem !important;
+      padding: 0.75rem 0.5rem !important;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    
+    /* Metric cards: 2 columns instead of 4 */
+    .metrics-grid {
+      grid-template-columns: repeat(2, 1fr) !important;
+    }
+    
+    /* Form inputs: make date field same size as others */
+    .round-form input[type="date"],
+    .round-form select,
+    .round-form input[type="number"] {
+      font-size: 1rem !important;
+      padding: 0.5rem 0.75rem !important;
+    }
+
+    /* Form grid: ensure proper spacing */
+    .round-form .grid {
+      gap: 0.75rem !important;
+    }
+
+    /* Date input: remove extra padding browsers add */
+    .round-form input[type="date"]::-webkit-datetime-edit {
+      padding: 0;
+    }
+
+    .round-form input[type="date"]::-webkit-calendar-picker-indicator {
+      margin-left: 0;
+    }
+  }
+</style>	
 </head>
 <body>
     <div id="root"></div>
@@ -725,7 +797,7 @@ useEffect(() => {
 
             return (
               <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 metrics-grid">
                   <div className="bg-blue-50 rounded-lg p-6">
                     <div className="flex items-center justify-between">
                       <Trophy className="text-blue-600" size={32} />
@@ -1179,9 +1251,9 @@ useEffect(() => {
             <div className="min-h-screen bg-gray-100">
               <div className="bg-white shadow">
   <div className="max-w-7xl mx-auto px-4 py-6">
-    <div className="flex justify-between items-center">
-      <h1 className="text-3xl font-bold text-gray-900">Golf Performance Tracker</h1>
-      <div className="flex gap-2">
+   <div className="flex justify-between items-center header-container">
+  <h1 className="text-3xl font-bold text-gray-900">Golf Performance Tracker</h1>
+  <div className="flex gap-2 button-container">
         <button
           onClick={() => {
             // Export all data
@@ -1342,8 +1414,8 @@ onChange={async (e) => {
 </div>
 
               <div className="bg-white shadow-sm">
-                <div className="max-w-7xl mx-auto px-4">
-                  <div className="flex space-x-8">
+  <div className="max-w-7xl mx-auto px-4">
+    <div className="flex space-x-8 nav-tabs">
                     <button onClick={() => setActiveTab('dashboard')} className={`py-4 px-2 border-b-2 font-medium text-sm flex items-center gap-2 ${activeTab === 'dashboard' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
                       <BarChart3 size={18} />
                       Dashboard
