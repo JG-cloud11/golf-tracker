@@ -499,18 +499,19 @@ useEffect(() => {
         <h2 className="text-2xl font-bold mb-4">{round ? 'Edit Round' : 'New Round'}</h2>
         <form onSubmit={handleSubmit} className="space-y-4 round-form">
           <div className="grid grid-cols-2 gap-2 sm:gap-4">
-            <div>
+           <div>
   <label className="block text-sm font-medium mb-1">Date</label>
   <input
     type="date"
     value={formData.date}
     onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-    className="w-full border rounded"
+    className="w-full border rounded px-3 py-2"
     style={{ 
-      padding: '4px 6px',
+      WebkitAppearance: 'none',
+      MozAppearance: 'none',
+      appearance: 'none',
       fontSize: '14px',
-      height: '34px',
-      boxSizing: 'border-box'
+      lineHeight: 'normal'
     }}
     required
   />
