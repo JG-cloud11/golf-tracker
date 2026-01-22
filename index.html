@@ -12,97 +12,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
- <style>
-  /* Mobile Portrait Optimizations */
-  @media (max-width: 640px) {
-    /* Header: Stack title and buttons */
-    .header-container {
-      flex-direction: column !important;
-      align-items: flex-start !important;
-      gap: 1rem !important;
-    }
-    
-    /* Make title smaller on mobile */
-    .header-container h1 {
-      font-size: 1.5rem !important;
-      line-height: 2rem !important;
-    }
-    
-    /* Button container full width with smaller buttons */
-    .button-container {
-      width: 100% !important;
-      justify-content: space-between !important;
-      flex-wrap: wrap !important;
-    }
-    
-    .button-container button,
-    .button-container label {
-      padding: 0.5rem 0.75rem !important;
-      font-size: 0.75rem !important;
-      min-width: auto !important;
-    }
-    
-    /* Navigation tabs: Fix overflow */
-    .nav-tabs {
-      gap: 0 !important;
-      overflow-x: auto !important;
-      -webkit-overflow-scrolling: touch !important;
-      display: flex !important;
-      padding-bottom: 0 !important;
-    }
-    
-    .nav-tabs button {
-      font-size: 0.75rem !important;
-      padding: 1rem 0.75rem !important;
-      white-space: nowrap !important;
-      flex-shrink: 0 !important;
-      min-width: auto !important;
-    }
-    
-    /* Metric cards: 2 columns instead of 4 */
-    .metrics-grid {
-      grid-template-columns: repeat(2, 1fr) !important;
-    }
-    
-    /* Form: Fix date field */
-    .round-form .grid {
-      gap: 0.5rem !important;
-      grid-template-columns: repeat(2, 1fr) !important;
-    }
-    
-    .round-form input[type="date"] {
-      font-size: 0.875rem !important;
-      padding: 0.5rem !important;
-      min-width: 0 !important;
-      width: 100% !important;
-    }
-    
-    .round-form select {
-      font-size: 0.875rem !important;
-      padding: 0.5rem !important;
-      min-width: 0 !important;
-      width: 100% !important;
-    }
-    
-    .round-form input[type="number"],
-    .round-form input[type="text"] {
-      font-size: 0.875rem !important;
-      padding: 0.5rem !important;
-      min-width: 0 !important;
-      width: 100% !important;
-    }
-
-    /* Date input: remove browser padding */
-    .round-form input[type="date"]::-webkit-datetime-edit {
-      padding: 0 !important;
-    }
-
-    .round-form input[type="date"]::-webkit-calendar-picker-indicator {
-      margin-left: 0 !important;
-      padding: 0 !important;
-    }
-  }
-</style>	
 </head>
 <body>
     <div id="root"></div>
@@ -590,14 +499,14 @@ useEffect(() => {
       <div className="bg-white rounded-lg p-6 max-w-2xl w-full my-8">
         <h2 className="text-2xl font-bold mb-4">{round ? 'Edit Round' : 'New Round'}</h2>
         <form onSubmit={handleSubmit} className="space-y-4 round-form">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-2 sm:gap-4">
             <div>
               <label className="block text-sm font-medium mb-1">Date</label>
-              <input type="date" value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} className="w-full border rounded px-3 py-2" required />
+              <input type="date" value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} className="w-full border rounded px-2 py-1.5 sm:px-3 sm:py-2 text-sm" required />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Course</label>
-              <select value={formData.courseId} onChange={(e) => handleCourseChange(e.target.value)} className="w-full border rounded px-3 py-2" required>
+              <select value={formData.courseId} onChange={(e) => handleCourseChange(e.target.value)} className="w-full border rounded px-2 py-1.5 sm:px-3 sm:py-2 text-sm" required>
                 <option value="">Select Course</option>
                 {courses.map(course => (
                   <option key={course.id} value={course.id}>{course.name}</option>
@@ -606,7 +515,7 @@ useEffect(() => {
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Tees</label>
-              <select value={formData.teeColor} onChange={(e) => handleTeeChange(e.target.value)} className="w-full border rounded px-3 py-2" required disabled={!formData.courseId}>
+              <select value={formData.teeColor} onChange={(e) => handleTeeChange(e.target.value)} className="w-full border rounded px-2 py-1.5 sm:px-3 sm:py-2 text-sm" required disabled={!formData.courseId}>
                 <option value="">Select Tees</option>
                 {formData.courseId && courses.find(c => c.id === parseInt(formData.courseId))?.tees.map(tee => (
                   <option key={tee.color} value={tee.color}>{tee.color}</option>
@@ -615,39 +524,39 @@ useEffect(() => {
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Adjusted Gross Score</label>
-              <input type="number" value={formData.adjustedGrossScore} onChange={(e) => setFormData({ ...formData, adjustedGrossScore: e.target.value })} className="w-full border rounded px-3 py-2" required />
+              <input type="number" value={formData.adjustedGrossScore} onChange={(e) => setFormData({ ...formData, adjustedGrossScore: e.target.value })} className="w-full border rounded px-2 py-1.5 sm:px-3 sm:py-2 text-sm" required />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Course Rating</label>
-              <input type="number" step="0.1" value={formData.courseRating} className="w-full border rounded px-3 py-2 bg-gray-100" readOnly required />
+              <input type="number" step="0.1" value={formData.courseRating} className="w-full border rounded px-2 py-1.5 sm:px-3 sm:py-2 text-sm" readOnly required />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Slope</label>
-              <input type="number" value={formData.slope} className="w-full border rounded px-3 py-2 bg-gray-100" readOnly required />
+              <input type="number" value={formData.slope} className="w-full border rounded px-2 py-1.5 sm:px-3 sm:py-2 text-sm" readOnly required />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Par</label>
-              <input type="number" value={formData.par} className="w-full border rounded px-3 py-2 bg-gray-100" readOnly />
+              <input type="number" value={formData.par} className="w-full border rounded px-2 py-1.5 sm:px-3 sm:py-2 text-sm" readOnly />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Putts</label>
-              <input type="number" value={formData.putts} onChange={(e) => setFormData({ ...formData, putts: e.target.value })} className="w-full border rounded px-3 py-2" />
+              <input type="number" value={formData.putts} onChange={(e) => setFormData({ ...formData, putts: e.target.value })} className="w-full border rounded px-2 py-1.5 sm:px-3 sm:py-2 text-sm" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Fairways Hit</label>
-              <input type="number" value={formData.fairwaysHit} onChange={(e) => setFormData({ ...formData, fairwaysHit: e.target.value })} className="w-full border rounded px-3 py-2" />
+              <input type="number" value={formData.fairwaysHit} onChange={(e) => setFormData({ ...formData, fairwaysHit: e.target.value })} className="w-full border rounded px-2 py-1.5 sm:px-3 sm:py-2 text-sm" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">GIR</label>
-              <input type="number" value={formData.greensInRegulation} onChange={(e) => setFormData({ ...formData, greensInRegulation: e.target.value })} className="w-full border rounded px-3 py-2" />
+              <input type="number" value={formData.greensInRegulation} onChange={(e) => setFormData({ ...formData, greensInRegulation: e.target.value })} className="w-full border rounded px-2 py-1.5 sm:px-3 sm:py-2 text-sm" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Penalty Strokes</label>
-              <input type="number" value={formData.penaltyStrokes} onChange={(e) => setFormData({ ...formData, penaltyStrokes: e.target.value })} className="w-full border rounded px-3 py-2" />
+              <input type="number" value={formData.penaltyStrokes} onChange={(e) => setFormData({ ...formData, penaltyStrokes: e.target.value })} className="w-full border rounded px-2 py-1.5 sm:px-3 sm:py-2 text-sm" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Double Bogey or Worse</label>
-              <input type="number" value={formData.doubleBogeyOrWorse} onChange={(e) => setFormData({ ...formData, doubleBogeyOrWorse: e.target.value })} className="w-full border rounded px-3 py-2" />
+              <input type="number" value={formData.doubleBogeyOrWorse} onChange={(e) => setFormData({ ...formData, doubleBogeyOrWorse: e.target.value })} className="w-full border rounded px-2 py-1.5 sm:px-3 sm:py-2 text-sm" />
             </div>
           </div>
           
@@ -676,7 +585,7 @@ useEffect(() => {
           
           <div>
             <label className="block text-sm font-medium mb-1">Notes</label>
-            <textarea value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} className="w-full border rounded px-3 py-2" rows="3" />
+            <textarea value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} className="w-full border rounded px-2 py-1.5 sm:px-3 sm:py-2 text-sm" rows="3" />
           </div>
           <div className="flex gap-2 justify-end">
             <button type="button" onClick={onCancel} className="px-4 py-2 border rounded hover:bg-gray-100">Cancel</button>
@@ -818,7 +727,7 @@ useEffect(() => {
 
             return (
               <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 metrics-grid">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="bg-blue-50 rounded-lg p-6">
                     <div className="flex items-center justify-between">
                       <Trophy className="text-blue-600" size={32} />
@@ -1272,9 +1181,9 @@ useEffect(() => {
             <div className="min-h-screen bg-gray-100">
               <div className="bg-white shadow">
   <div className="max-w-7xl mx-auto px-4 py-6">
-   <div className="flex justify-between items-center header-container">
-  <h1 className="text-3xl font-bold text-gray-900">Golf Performance Tracker</h1>
-  <div className="flex gap-2 button-container">
+  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+  <h1 className="text-xl sm:text-3xl font-bold text-gray-900">Golf Performance Tracker</h1>
+  <div className="flex gap-2 flex-wrap w-full sm:w-auto justify-between">
         <button
           onClick={() => {
             // Export all data
@@ -1436,20 +1345,20 @@ onChange={async (e) => {
 
               <div className="bg-white shadow-sm">
   <div className="max-w-7xl mx-auto px-4">
-    <div className="flex space-x-8 nav-tabs">
-                    <button onClick={() => setActiveTab('dashboard')} className={`py-4 px-2 border-b-2 font-medium text-sm flex items-center gap-2 ${activeTab === 'dashboard' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+    <div className="flex gap-2 sm:gap-8 overflow-x-auto">
+                    <button onClick={() => setActiveTab('dashboard')} className={`py-4 px-1 sm:px-2 border-b-2 font-medium text-xs sm:text-sm flex items-center gap-1 sm:gap-2 whitespace-nowrap ${activeTab === 'dashboard' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
                       <BarChart3 size={18} />
                       Dashboard
                     </button>
-                    <button onClick={() => setActiveTab('rounds')} className={`py-4 px-2 border-b-2 font-medium text-sm flex items-center gap-2 ${activeTab === 'rounds' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+                    <button onClick={() => setActiveTab('rounds')} className={`py-4 px-1 sm:px-2 border-b-2 font-medium text-xs sm:text-sm flex items-center gap-1 sm:gap-2 whitespace-nowrap ${activeTab === 'rounds' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
                       <List size={18} />
                       Rounds
                     </button>
-                    <button onClick={() => setActiveTab('clubs')} className={`py-4 px-2 border-b-2 font-medium text-sm flex items-center gap-2 ${activeTab === 'clubs' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+                    <button onClick={() => setActiveTab('clubs')} className={`py-4 px-1 sm:px-2 border-b-2 font-medium text-xs sm:text-sm flex items-center gap-1 sm:gap-2 whitespace-nowrap ${activeTab === 'clubs' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
                       <Target size={18} />
                       Clubs
                     </button>
-                    <button onClick={() => setActiveTab('courses')} className={`py-4 px-2 border-b-2 font-medium text-sm flex items-center gap-2 ${activeTab === 'courses' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+                    <button onClick={() => setActiveTab('courses')} className={`py-4 px-1 sm:px-2 border-b-2 font-medium text-xs sm:text-sm flex items-center gap-1 sm:gap-2 whitespace-nowrap ${activeTab === 'courses' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
                       <Calendar size={18} />
                       Courses
                     </button>
