@@ -19,7 +19,7 @@
     .header-container {
       flex-direction: column !important;
       align-items: flex-start !important;
-      gap: 1rem;
+      gap: 1rem !important;
     }
     
     /* Make title smaller on mobile */
@@ -32,26 +32,31 @@
     .button-container {
       width: 100% !important;
       justify-content: space-between !important;
+      flex-wrap: wrap !important;
     }
     
     .button-container button,
     .button-container label {
       padding: 0.5rem 0.75rem !important;
       font-size: 0.75rem !important;
+      min-width: auto !important;
     }
     
-    /* Navigation tabs: smaller text and tighter spacing */
+    /* Navigation tabs: Fix overflow */
     .nav-tabs {
-      gap: 0.5rem !important;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
+      gap: 0 !important;
+      overflow-x: auto !important;
+      -webkit-overflow-scrolling: touch !important;
+      display: flex !important;
+      padding-bottom: 0 !important;
     }
     
     .nav-tabs button {
-      font-size: 0.875rem !important;
-      padding: 0.75rem 0.5rem !important;
-      white-space: nowrap;
-      flex-shrink: 0;
+      font-size: 0.75rem !important;
+      padding: 1rem 0.75rem !important;
+      white-space: nowrap !important;
+      flex-shrink: 0 !important;
+      min-width: auto !important;
     }
     
     /* Metric cards: 2 columns instead of 4 */
@@ -59,26 +64,42 @@
       grid-template-columns: repeat(2, 1fr) !important;
     }
     
-    /* Form inputs: make date field same size as others */
-    .round-form input[type="date"],
-    .round-form select,
-    .round-form input[type="number"] {
-      font-size: 1rem !important;
-      padding: 0.5rem 0.75rem !important;
-    }
-
-    /* Form grid: ensure proper spacing */
+    /* Form: Fix date field */
     .round-form .grid {
-      gap: 0.75rem !important;
+      gap: 0.5rem !important;
+      grid-template-columns: repeat(2, 1fr) !important;
+    }
+    
+    .round-form input[type="date"] {
+      font-size: 0.875rem !important;
+      padding: 0.5rem !important;
+      min-width: 0 !important;
+      width: 100% !important;
+    }
+    
+    .round-form select {
+      font-size: 0.875rem !important;
+      padding: 0.5rem !important;
+      min-width: 0 !important;
+      width: 100% !important;
+    }
+    
+    .round-form input[type="number"],
+    .round-form input[type="text"] {
+      font-size: 0.875rem !important;
+      padding: 0.5rem !important;
+      min-width: 0 !important;
+      width: 100% !important;
     }
 
-    /* Date input: remove extra padding browsers add */
+    /* Date input: remove browser padding */
     .round-form input[type="date"]::-webkit-datetime-edit {
-      padding: 0;
+      padding: 0 !important;
     }
 
     .round-form input[type="date"]::-webkit-calendar-picker-indicator {
-      margin-left: 0;
+      margin-left: 0 !important;
+      padding: 0 !important;
     }
   }
 </style>	
@@ -568,7 +589,7 @@ useEffect(() => {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
       <div className="bg-white rounded-lg p-6 max-w-2xl w-full my-8">
         <h2 className="text-2xl font-bold mb-4">{round ? 'Edit Round' : 'New Round'}</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 round-form">
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1">Date</label>
