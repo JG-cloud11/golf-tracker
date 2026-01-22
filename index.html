@@ -500,10 +500,21 @@ useEffect(() => {
         <form onSubmit={handleSubmit} className="space-y-4 round-form">
           <div className="grid grid-cols-2 gap-2 sm:gap-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Date</label>
-              <input type="date" value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} className="w-full border rounded text-xs"
-style={{ padding: '4px', fontSize: '12px' }} required />
-            </div>
+  <label className="block text-sm font-medium mb-1">Date</label>
+  <input
+    type="date"
+    value={formData.date}
+    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+    className="w-full border rounded"
+    style={{ 
+      padding: '6px 8px',
+      fontSize: '14px',
+      lineHeight: '1.5',
+      height: '38px'
+    }}
+    required
+  />
+</div>
             <div>
               <label className="block text-sm font-medium mb-1">Course</label>
               <select value={formData.courseId} onChange={(e) => handleCourseChange(e.target.value)} className="w-full border rounded px-2 py-1.5 sm:px-3 sm:py-2 text-sm" required>
